@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <link rel="stylesheet" href="css/Dashboard.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-chart-pie"></i> Dashboard</div>
+    <div class="topbar-right">
+      <span class="mono text-muted" id="clock" style="font-size:10.5px">—</span>
+      <button class="btn btn-secondary btn-sm" onclick="loadDashboard()"><i class="fas fa-rotate"></i> Refresh</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-title"><i class="fas fa-layer-group"></i> Ringkasan Database</div>
+    <div class="stats-grid" id="statsGrid"><div class="loader" style="grid-column:1/-1"><div class="spin"></div> Memuat…</div></div>
+    <div class="section-title"><i class="fas fa-chart-bar"></i> Analisis Visual</div>
+    <div class="chart-grid" id="chartGrid">
+      <div class="chart-card"><div class="chart-head"><span class="chart-title">TOP MATERIAL BY HARGA</span><span class="chart-badge">TOP 8</span></div><canvas id="chartMaterial"></canvas></div>
+      <div class="chart-card"><div class="chart-head"><span class="chart-title">DISTRIBUSI KATEGORI</span><span class="chart-badge">KATEGORI</span></div><canvas id="chartCategory"></canvas></div>
+    </div>
+    <div class="section-title"><i class="fas fa-clock-rotate-left"></i> Material Terbaru</div>
+    <div class="table-card">
+      <div class="table-head"><span class="table-title">5 Entri Terkini</span><a href="material.html" class="text-primary" style="font-size:11px">Lihat Semua →</a></div>
+      <div id="recentTable"><div class="loader"><div class="spin"></div> Memuat…</div></div>
+    </div>
+    <div class="section-title"><i class="fas fa-trophy"></i> Best Price Snapshot</div>
+    <div class="table-card">
+      <div class="table-head"><span class="table-title">Harga Terendah per Material</span><a href="material.html#analisa" class="text-primary" style="font-size:11px">Analisa Lengkap →</a></div>
+      <div id="bestTable"><div class="loader"><div class="spin"></div> Memuat…</div></div>
+    </div>
+  </div>
+</main>
+
+    <script src="js/Dashboard.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Material</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <link rel="stylesheet" href="css/Material.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-boxes-stacked"></i> Database Material</div>
+    <div class="topbar-right" id="topbarActions"></div>
+  </div>
+  <div class="content">
+    <!-- TABS (built dynamically based on role) -->
+    <div class="tabs" id="pageTabs"></div>
+ 
+    <!-- ══ MATERIAL PANEL ══ -->
+    <div class="panel" id="panel-material">
+      <div class="panel-grid">
+        <div class="form-card" style="position:sticky;top:62px" id="matFormCard">
+          <div class="fc-title"><i class="fas fa-plus-circle"></i> <span id="matFormTitle">Input Material</span></div>
+          <input type="hidden" id="matEditId">
+          <div class="frow-2">
+            <div class="fgroup"><label class="flabel">Kategori <span class="req">*</span></label><input id="matKategori" list="catList" class="finput" placeholder="Beton, Besi…"><datalist id="catList"></datalist></div>
+            <div class="fgroup"><label class="flabel">Sub Kategori</label><input id="matSub" list="subList" class="finput" placeholder="Sub kategori"><datalist id="subList"></datalist></div>
+          </div>
+          <div class="fgroup"><label class="flabel">Nama Material <span class="req">*</span></label><input id="matNama" class="finput" placeholder="Contoh: Besi Beton D16"></div>
+          <div class="fgroup"><label class="flabel">Spesifikasi</label><textarea id="matSpek" class="ftarea" rows="2" placeholder="Uraian spesifikasi…"></textarea></div>
+          <div class="frow-2">
+            <div class="fgroup"><label class="flabel">Harga AHSP (Rp) <span class="req">*</span></label><input id="matHarga" type="number" step="any" min="0" class="finput" placeholder="Harga per satuan AHSP"></div>
+            <div class="fgroup"><label class="flabel">Satuan AHSP <span class="req">*</span></label><input id="matSatuan" list="satList" class="finput" placeholder="kg, m², liter…"><datalist id="satList"><option value="kg"><option value="m²"><option value="m³"><option value="m'"><option value="liter"><option value="bh"><option value="lbr"><option value="sak"><option value="set"><option value="ls"><option value="unit"><option value="ton"><option value="btg"><option value="OH"></datalist></div>
+          </div>
+ 
+          <!-- CONVERSION ENGINE TOGGLE -->
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:13px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--dim);user-select:none">
+              <input type="checkbox" id="convToggle" onchange="toggleConvSection()" style="accent-color:var(--primary);width:14px;height:14px">
+              <i class="fas fa-arrows-rotate" style="color:var(--primary);font-size:11px"></i>
+              <span><strong style="color:var(--text)">Input Harga Vendor & Auto-Konversi</strong> — harga vendor otomatis dikonversi ke satuan AHSP</span>
+            </label>
+            <div id="convSection" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="frow-2" style="margin-bottom:10px">
+                <div class="fgroup" style="margin:0">
+                  <label class="flabel">Unit Vendor</label>
+                  <select id="convUnitVendor" class="fsel" onchange="autoConvertPrice()" style="font-size:12px">
+                    <option value="">— Pilih —</option>
+                    <option>Roll</option><option>Lembar</option><option>Pail</option>
+                    <option>Dus</option><option>Sak</option><option>Batang</option>
+                    <option>Kaleng</option><option>Box</option><option>Ton</option>
+                    <option>Galon</option><option>Ember</option><option>Jerigen</option>
+                  </select>
+                </div>
+                <div class="fgroup" style="margin:0">
+                  <label class="flabel">Harga Vendor (Rp)</label>
+                  <input id="convHargaVendor" type="number" step="any" min="0" class="finput" placeholder="1500000" oninput="autoConvertPrice()" style="font-size:12px">
+                </div>
+              </div>
+              <div class="frow-2" style="margin-bottom:10px">
+                <div class="fgroup" style="margin:0">
+                  <label class="flabel">Faktor Konversi</label>
+                  <input id="convFaktor" type="number" step="any" min="0.0001" class="finput" placeholder="100" oninput="autoConvertPrice()" style="font-size:12px">
+                </div>
+                <div class="frow-2" style="margin:0;gap:8px">
+                  <div class="fgroup" style="margin:0">
+                    <label class="flabel">Waste%</label>
+                    <input id="convWaste" type="number" step="any" min="0" max="100" class="finput" placeholder="0" oninput="autoConvertPrice()" style="font-size:12px">
+                  </div>
+                  <div class="fgroup" style="margin:0">
+                    <label class="flabel">Purchase%</label>
+                    <input id="convPurchase" type="number" step="any" min="0" max="100" class="finput" placeholder="0" oninput="autoConvertPrice()" style="font-size:12px">
+                  </div>
+                </div>
+              </div>
+              <!-- RESULT PREVIEW -->
+              <div id="convResult" style="display:none;background:var(--card);border:1px solid var(--primary-b);border-radius:var(--r-md);padding:10px 12px;font-size:11.5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                  <span style="color:var(--dim)">Formula:</span>
+                  <span id="convFormula" style="font-family:var(--fmono);font-size:10px;color:var(--cyan)"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="color:var(--dim)">Harga AHSP =</span>
+                  <span id="convResultVal" style="font-family:var(--fmono);font-size:15px;font-weight:700;color:var(--primary)"></span>
+                </div>
+                <div style="margin-top:6px;font-size:10px;color:var(--success);display:flex;align-items:center;gap:5px">
+                  <i class="fas fa-check-circle"></i>
+                  <span id="convRuleHint"></span>
+                </div>
+              </div>
+              <div id="convRuleBadge" style="margin-top:6px"></div>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Vendor / Supplier</label>
+            <div class="vnd-wrap" id="matVendorWrap">
+              <div class="vnd-input-row">
+                <input type="text" class="vnd-search" id="matVendorSearch" placeholder="Ketik nama vendor…" autocomplete="off"
+                  oninput="vndFilter('mat')" onfocus="vndOpen('mat')" onkeydown="vndKey(event,'mat')">
+                <button type="button" class="vnd-caret" id="matVendorCaret"
+                  onclick="document.getElementById('matVendor').value?vndClear('mat'):vndToggle('mat')" tabindex="-1">
+                  <i class="fas fa-chevron-down" id="matVendorCaretIco"></i>
+                </button>
+              </div>
+              <div class="vnd-badge" id="matVendorBadge" style="display:none">
+                <i class="fas fa-store"></i><strong id="matVendorBadgeTxt">—</strong>
+              </div>
+              <div class="vnd-dropdown" id="matVendorDrop"></div>
+            </div>
+            <input type="hidden" id="matVendor">
+          </div>
+          <button class="btn btn-primary btn-full" id="matSaveBtn" onclick="saveMaterial()"><i class="fas fa-save"></i> <span id="matSaveLbl">SIMPAN MATERIAL</span></button>
+          <button class="btn btn-secondary btn-full" id="matCancelBtn" onclick="cancelEditMaterial()" style="margin-top:7px;display:none"><i class="fas fa-times"></i> Batal Edit</button>
+        </div>
+        <div>
+          <div class="data-card">
+            <div class="data-toolbar">
+              <div class="search-box"><i class="fas fa-search"></i><input id="matSearch" placeholder="Cari material, vendor…" oninput="debouncedMatFilter()"></div>
+              <select class="filter-sel" id="matFilterKat" onchange="filterMaterial()"><option value="">Semua Kategori</option></select>
+              <span class="count-tag" id="matCount">0 item</span>
+              <button class="btn btn-secondary btn-sm" onclick="exportMatCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl"><thead><tr>
+                <th onclick="sortMat('id')">ID <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortMat('kategori')">Kategori <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortMat('nama')">Nama Material <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortMat('vendor')">Vendor <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortMat('harga')">Harga <i class="fas fa-sort sort-ico"></i></th>
+                <th>Sat.</th><th></th>
+              </tr></thead>
+              <tbody id="matBody"><tr><td colspan="7"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="matPag"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ UPAH PANEL ══ -->
+    <div class="panel" id="panel-upah">
+      <div class="panel-grid">
+        <div class="form-card" style="position:sticky;top:62px">
+          <div class="fc-title"><i class="fas fa-user-tie" style="color:var(--cyan)"></i> <span id="upahFormTitle">Input Upah</span></div>
+          <input type="hidden" id="upahEditId">
+          <div class="fgroup"><label class="flabel">Nama Upah <span class="req">*</span></label><input id="upahNama" class="finput" placeholder="Tukang Batu, Mandor…"></div>
+          <div class="frow-2">
+            <div class="fgroup"><label class="flabel">Satuan <span class="req">*</span></label><input id="upahSatuan" list="satList" class="finput" placeholder="OH, hari…"></div>
+            <div class="fgroup"><label class="flabel">Harga (Rp) <span class="req">*</span></label><input id="upahHarga" type="number" step="any" min="0" class="finput" placeholder="0"></div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveUpah()"><i class="fas fa-save"></i> SIMPAN UPAH</button>
+          <button class="btn btn-secondary btn-full" id="upahCancelBtn" onclick="cancelEditUpah()" style="margin-top:7px;display:none"><i class="fas fa-times"></i> Batal Edit</button>
+        </div>
+        <div class="data-card">
+          <div class="data-toolbar">
+            <div class="search-box"><i class="fas fa-search"></i><input id="upahSearch" placeholder="Cari upah…" oninput="debouncedUpahFilter()"></div>
+            <span class="count-tag" id="upahCount">0 item</span>
+            <button class="btn btn-secondary btn-sm" onclick="exportUpahCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>ID</th><th>Nama Upah</th><th>Satuan</th><th>Harga</th><th></th></tr></thead>
+          <tbody id="upahBody"><tr><td colspan="5"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ ALAT PANEL ══ -->
+    <div class="panel" id="panel-alat">
+      <div class="panel-grid">
+        <div class="form-card" style="position:sticky;top:62px">
+          <div class="fc-title"><i class="fas fa-wrench" style="color:var(--purple)"></i> <span id="alatFormTitle">Input Alat</span></div>
+          <input type="hidden" id="alatEditId">
+          <div class="fgroup"><label class="flabel">Nama Alat <span class="req">*</span></label><input id="alatNama" class="finput" placeholder="Concrete Mixer, Stamper…"></div>
+          <div class="frow-2">
+            <div class="fgroup"><label class="flabel">Satuan <span class="req">*</span></label><input id="alatSatuan" list="satList" class="finput" placeholder="jam, hari…"></div>
+            <div class="fgroup"><label class="flabel">Harga Sewa (Rp) <span class="req">*</span></label><input id="alatHarga" type="number" step="any" min="0" class="finput" placeholder="0"></div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Vendor / Supplier Alat</label>
+            <div class="vnd-wrap" id="alatVendorWrap">
+              <div class="vnd-input-row">
+                <input type="text" class="vnd-search" id="alatVendorSearch" placeholder="Ketik nama vendor…" autocomplete="off"
+                  oninput="vndFilter('alat')" onfocus="vndOpen('alat')" onkeydown="vndKey(event,'alat')">
+                <button type="button" class="vnd-caret" id="alatVendorCaret"
+                  onclick="document.getElementById('alatVendor').value?vndClear('alat'):vndToggle('alat')" tabindex="-1">
+                  <i class="fas fa-chevron-down" id="alatVendorCaretIco"></i>
+                </button>
+              </div>
+              <div class="vnd-badge" id="alatVendorBadge" style="display:none">
+                <i class="fas fa-store"></i><strong id="alatVendorBadgeTxt">—</strong>
+              </div>
+              <div class="vnd-dropdown" id="alatVendorDrop"></div>
+            </div>
+            <input type="hidden" id="alatVendor">
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveAlat()"><i class="fas fa-save"></i> SIMPAN ALAT</button>
+          <button class="btn btn-secondary btn-full" id="alatCancelBtn" onclick="cancelEditAlat()" style="margin-top:7px;display:none"><i class="fas fa-times"></i> Batal Edit</button>
+        </div>
+        <div class="data-card">
+          <div class="data-toolbar">
+            <div class="search-box"><i class="fas fa-search"></i><input id="alatSearch" placeholder="Cari alat, vendor…" oninput="debouncedAlatFilter()"></div>
+            <span class="count-tag" id="alatCount">0 item</span>
+            <button class="btn btn-secondary btn-sm" onclick="exportAlatCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>ID</th><th>Nama Alat</th><th>Satuan</th><th>Harga Sewa</th><th>Vendor</th><th></th></tr></thead>
+          <tbody id="alatBody"><tr><td colspan="6"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ ANALISA PANEL ══ -->
+    <div class="panel" id="panel-analisa">
+      <div id="printHeader">
+        <h2 style="font-size:20px;font-weight:700">LAPORAN ANALISA HARGA MATERIAL</h2>
+        <p style="font-size:12px;color:#666;margin-top:4px">Dicetak: <span id="printDate">—</span></p>
+      </div>
+      <div class="data-toolbar" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:14px;border-radius:var(--r-lg)">
+        <div class="search-box" style="flex:1"><i class="fas fa-search"></i><input id="analisaSearch" placeholder="Cari nama material…" oninput="debouncedAnalisaFilter()"></div>
+        <select class="filter-sel" id="analisaKatFilter" onchange="filterAnalisa()"><option value="">Semua Kategori</option></select>
+        <span class="count-tag" id="analisaCount">0 material</span>
+        <button class="btn btn-success btn-sm" id="btnPrintPDF" onclick="printAnalisaPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
+      </div>
+      <div class="stat-summary-bar" id="analisaSummary" style="display:none">
+        <div class="ssb-card"><div class="ssb-val text-primary" id="ssMin">—</div><div class="ssb-label">Harga Terendah</div></div>
+        <div class="ssb-card"><div class="ssb-val" style="color:var(--warning)" id="ssAvg">—</div><div class="ssb-label">Rata-rata</div></div>
+        <div class="ssb-card"><div class="ssb-val" style="color:var(--danger)" id="ssMax">—</div><div class="ssb-label">Harga Tertinggi</div></div>
+      </div>
+      <div id="analisaBody"><div class="loader"><div class="spin"></div> Memuat analisa harga…</div></div>
+    </div>
+ 
+  </div>
+</main>
+
+    <script src="js/Material.js"></script>
+
+</body>
+
+</html>

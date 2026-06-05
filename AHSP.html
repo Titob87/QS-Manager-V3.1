@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - AHSP</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="css/AHSP.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+ 
+<!-- AHSP DETAIL MODAL -->
+<div class="detail-modal" id="detailModal">
+  <div class="detail-modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div class="fc-title" style="margin:0"><i class="fas fa-eye"></i> Detail AHSP</div>
+      <button onclick="closeDetailModal()" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="detailModalContent"></div>
+  </div>
+</div>
+ 
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-calculator"></i> AHSP Builder</div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="exportSelectedExcel()" id="btnExportXL" title="Export AHSP terpilih ke Excel"><i class="fas fa-file-excel"></i> Export Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="copySelectedTSV()" id="btnCopyTSV" title="Copy TSV ke clipboard (paste ke Spreadsheet)"><i class="fas fa-copy"></i> Copy TSV</button>
+    </div>
+  </div>
+ 
+  <div class="content">
+    <div class="ahsp-layout">
+ 
+      <!-- LEFT: BUILDER FORM -->
+      <div>
+        <div class="builder-card" id="builderCard">
+          <div class="fc-title"><i class="fas fa-hammer"></i> <span id="builderTitle">Input AHSP Baru</span></div>
+          <input type="hidden" id="ahspEditId">
+ 
+          <div class="fgroup">
+            <label class="flabel">Nama Pekerjaan <span class="req">*</span></label>
+            <input id="ahspNama" class="finput" placeholder="Contoh: Pekerjaan Pondasi Beton Bertulang K-350">
+          </div>
+ 
+          <!-- ITEM LIST -->
+          <div class="fgroup">
+            <label class="flabel">Komponen AHSP</label>
+            <div id="ahspItemList">
+              <div class="item-placeholder"><i class="fas fa-plus-circle"></i>Klik tombol di bawah untuk menambahkan komponen</div>
+            </div>
+          </div>
+ 
+          <div class="add-btns">
+            <button class="btn-add-item bi-mat" onclick="addItem('material')"><i class="fas fa-boxes-stacked"></i> + Material</button>
+            <button class="btn-add-item bi-upah" onclick="addItem('upah')"><i class="fas fa-user-tie"></i> + Upah</button>
+            <button class="btn-add-item bi-alat" onclick="addItem('alat')"><i class="fas fa-wrench"></i> + Alat</button>
+          </div>
+ 
+          <!-- BREAKDOWN BOX -->
+          <div class="breakdown-box">
+            <div class="breakdown-row">
+              <span class="breakdown-label">Subtotal AHSP</span>
+              <span class="breakdown-val" id="bdSubtotal">Rp 0</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">
+                Overhead &nbsp;
+                <input type="number" step="any" min="0" max="100" class="pct-input" id="pctOverhead" value="0" oninput="recalcBreakdown()" placeholder="0">%
+              </span>
+              <span class="breakdown-val" id="bdOverhead">+ Rp 0</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">
+                Contractor Fee &nbsp;
+                <input type="number" step="any" min="0" max="100" class="pct-input" id="pctFee" value="0" oninput="recalcBreakdown()" placeholder="0">%
+              </span>
+              <span class="breakdown-val" id="bdFee">+ Rp 0</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">
+                Pajak PPH &nbsp;
+                <input type="number" step="any" min="0" max="100" class="pct-input" id="pctPPH" value="0" oninput="recalcBreakdown()" placeholder="0">%
+              </span>
+              <span class="breakdown-val" id="bdPPH">+ Rp 0</span>
+            </div>
+            <div class="breakdown-row total">
+              <span style="color:var(--text)">GRAND TOTAL</span>
+              <span style="color:var(--primary);font-size:20px" id="bdGrand">Rp 0</span>
+            </div>
+          </div>
+ 
+          <button class="btn btn-primary btn-full" id="ahspSaveBtn" onclick="saveAHSP()">
+            <i class="fas fa-save"></i> <span id="ahspSaveLbl">SIMPAN AHSP</span>
+          </button>
+          <button class="btn btn-secondary btn-full" id="ahspCancelBtn" onclick="cancelEditAHSP()" style="margin-top:7px;display:none">
+            <i class="fas fa-times"></i> Batal Edit
+          </button>
+        </div>
+      </div>
+ 
+      <!-- RIGHT: AHSP LIST -->
+      <div class="ahsp-list-card">
+        <div class="alc-head">
+          <span style="font-family:var(--fdisp);font-size:15px;font-weight:700;letter-spacing:.5px">AHSP Tersimpan</span>
+          <span class="count-tag" id="ahspCount">0</span>
+        </div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+          <div class="search-box"><i class="fas fa-search"></i>
+            <input id="ahspSearch" placeholder="Cari pekerjaan…" oninput="filterAHSP()" style="font-size:12px">
+          </div>
+        </div>
+        <div id="ahspListBody" style="max-height:600px;overflow-y:auto">
+          <div class="loader"><div class="spin"></div> Memuat…</div>
+        </div>
+        <div class="export-bar">
+          <button class="btn btn-secondary btn-sm" onclick="selectAllAHSP()" title="Pilih semua"><i class="fas fa-check-square"></i> Pilih Semua</button>
+          <button class="btn btn-secondary btn-sm" onclick="deselectAllAHSP()" title="Batal pilih"><i class="fas fa-square"></i> Batal Semua</button>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</main>
+
+    <script src="js/AHSP.js"></script>
+
+</body>
+
+</html>

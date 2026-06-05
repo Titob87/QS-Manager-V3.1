@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Vendor</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/Vendor.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-store"></i> Database Vendor</div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="exportVendorCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-title"><i class="fas fa-chart-simple"></i> Statistik Vendor</div>
+    <div class="vendor-stats">
+      <div class="vs-card c-cyan" style="border-top:2px solid var(--cyan)"><div class="vs-val text-primary" id="vsTotal">—</div><div class="vs-label">Total Vendor</div></div>
+      <div class="vs-card" style="border-top:2px solid var(--success)"><div class="vs-val" style="color:var(--success)" id="vsAktif">—</div><div class="vs-label">Aktif</div></div>
+      <div class="vs-card" style="border-top:2px solid var(--muted)"><div class="vs-val text-muted" id="vsNonaktif">—</div><div class="vs-label">Nonaktif</div></div>
+    </div>
+ 
+    <div class="section-title"><i class="fas fa-store"></i> Data Vendor</div>
+    <div class="panel-grid">
+      <!-- FORM -->
+      <div class="form-card" id="vendorFormCard" style="position:sticky;top:62px">
+        <div class="fc-title"><i class="fas fa-plus-circle"></i> <span id="vendorFormTitle">Input Vendor</span></div>
+        <input type="hidden" id="vendorEditId">
+        <div class="fgroup"><label class="flabel">Nama Vendor <span class="req">*</span></label><input id="vNama" class="finput" placeholder="PT / CV / UD Nama Vendor"></div>
+        <div class="frow-2">
+          <div class="fgroup"><label class="flabel">PIC</label><input id="vPIC" class="finput" placeholder="Nama penanggung jawab"></div>
+          <div class="fgroup"><label class="flabel">No. Telepon</label><input id="vTelp" type="tel" class="finput" placeholder="08xx-xxxx-xxxx"></div>
+        </div>
+        <div class="fgroup"><label class="flabel">Email</label><input id="vEmail" type="email" class="finput" placeholder="vendor@email.com"></div>
+        <div class="fgroup"><label class="flabel">Alamat</label><textarea id="vAlamat" class="ftarea" rows="2" placeholder="Alamat lengkap vendor…"></textarea></div>
+        <div class="frow-2">
+          <div class="fgroup"><label class="flabel">Kota</label><input id="vKota" class="finput" placeholder="Jakarta, Surabaya…"></div>
+          <div class="fgroup"><label class="flabel">Kategori Vendor</label>
+            <select id="vKategori" class="fsel">
+              <option value="">— Pilih —</option>
+              <option>Material Bangunan</option><option>Besi & Baja</option>
+              <option>Kayu & Plywood</option><option>Finishing</option>
+              <option>Keramik & Granit</option><option>Plumbing</option>
+              <option>Alat & Mesin</option><option>Semen & Beton</option>
+              <option>Elektrikal</option><option>Lainnya</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup"><label class="flabel">Status</label>
+          <select id="vStatus" class="fsel"><option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif</option></select>
+        </div>
+        <button class="btn btn-primary btn-full" id="vendorSaveBtn" onclick="saveVendor()"><i class="fas fa-save"></i> <span id="vendorSaveLbl">SIMPAN VENDOR</span></button>
+        <button class="btn btn-secondary btn-full" id="vendorCancelBtn" onclick="cancelEditVendor()" style="margin-top:7px;display:none"><i class="fas fa-times"></i> Batal Edit</button>
+      </div>
+ 
+      <!-- TABLE -->
+      <div>
+        <div class="data-card">
+          <div class="data-toolbar">
+            <div class="search-box"><i class="fas fa-search"></i><input id="vendorSearch" placeholder="Cari nama, kota, PIC…" oninput="debouncedFilter()"></div>
+            <select class="filter-sel" id="vendorKatFilter" onchange="filterVendors()">
+              <option value="">Semua Kategori</option>
+              <option>Material Bangunan</option><option>Besi & Baja</option>
+              <option>Kayu & Plywood</option><option>Finishing</option>
+              <option>Keramik & Granit</option><option>Plumbing</option>
+              <option>Alat & Mesin</option><option>Semen & Beton</option>
+              <option>Elektrikal</option><option>Lainnya</option>
+            </select>
+            <select class="filter-sel" id="vendorStatusFilter" onchange="filterVendors()">
+              <option value="">Semua Status</option>
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
+            <span class="count-tag" id="vendorCount">0 vendor</span>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr>
+                <th onclick="sortVendor('id')">ID <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortVendor('namaVendor')">Nama Vendor <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortVendor('pic')">PIC</th>
+                <th>Telepon</th>
+                <th onclick="sortVendor('kota')">Kota <i class="fas fa-sort sort-ico"></i></th>
+                <th onclick="sortVendor('kategori')">Kategori <i class="fas fa-sort sort-ico"></i></th>
+                <th>Status</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="vendorBody">
+                <tr><td colspan="8"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="vendorPag"></div>
+        </div>
+ 
+        <!-- DETAIL PANEL -->
+        <div id="vendorDetail" style="display:none;margin-top:16px">
+          <div class="section-title" style="margin-bottom:12px"><i class="fas fa-address-card"></i> Detail Vendor</div>
+          <div class="form-card">
+            <div id="vendorDetailContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+    <script src="js/Vendor.js"></script>
+
+</body>
+
+</html>

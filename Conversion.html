@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Unit Conversion</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="css/Conversion.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-arrows-rotate"></i> Unit Konversi Material</div>
+    <div class="topbar-right" id="topbarActions">
+      <button class="btn btn-secondary btn-sm" onclick="switchMainTab('import')"><i class="fas fa-file-excel"></i> Import Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportConvCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+    </div>
+  </div>
+ 
+  <div class="content">
+    <!-- INFO BANNER -->
+    <div style="background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.15);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
+      <i class="fas fa-circle-info" style="color:var(--cyan);margin-top:2px;font-size:16px;flex-shrink:0"></i>
+      <div style="font-size:12.5px;line-height:1.7;color:var(--dim)">
+        <strong style="color:var(--text)">Material Unit Conversion Engine</strong> — Sistem ini mengkonversi harga vendor (per Roll, Dus, Pail, dll) menjadi harga satuan dasar AHSP (per m, m², liter, dll) secara otomatis.
+        Formula: <span style="font-family:var(--fmono);color:var(--cyan)">Harga AHSP = (Harga Vendor ÷ Faktor) × (1 + Waste%) × (1 + Purchase%)</span>
+      </div>
+    </div>
+ 
+    <!-- MAIN TABS -->
+    <div class="tabs conversion-page-tabs" style="margin-bottom:20px">
+      <div class="tab active" id="mtab-rules"   onclick="switchMainTab('rules')"><i class="fas fa-list-check"></i> Aturan Konversi</div>
+      <div class="tab"        id="mtab-calc"    onclick="switchMainTab('calc')"><i class="fas fa-calculator"></i> Kalkulator</div>
+      <div class="tab"        id="mtab-import"  onclick="switchMainTab('import')"><i class="fas fa-file-import"></i> Import Excel</div>
+      <div class="tab"        id="mtab-ref"     onclick="switchMainTab('ref')"><i class="fas fa-book"></i> Referensi Satuan</div>
+    </div>
+ 
+    <!-- ══ TAB: ATURAN KONVERSI ══ -->
+    <div id="panel-rules" class="panel active">
+      <div class="panel-grid">
+        <!-- FORM -->
+        <div class="form-card" style="position:sticky;top:62px" id="convFormCard">
+          <div class="fc-title"><i class="fas fa-plus-circle"></i> <span id="convFormTitle">Tambah Aturan</span></div>
+          <input type="hidden" id="convEditId">
+ 
+          <div class="fgroup">
+            <label class="flabel">Nama Material <span class="req">*</span></label>
+            <input id="cNama" class="finput" placeholder="Kabel NYM 2x1.5, Keramik 60x60…">
+            <div class="factor-hint"><i class="fas fa-lightbulb"></i> Gunakan kata kunci yang cukup spesifik (minimal 5 karakter)</div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Kategori</label>
+            <input id="cKategori" list="catConvList" class="finput" placeholder="Elektrikal, Keramik…">
+            <datalist id="catConvList">
+              <option value="Elektrikal"><option value="Beton"><option value="Besi & Baja">
+              <option value="Finishing"><option value="Keramik"><option value="Plumbing">
+              <option value="Kayu"><option value="Waterproofing"><option value="Lainnya">
+            </datalist>
+          </div>
+          <div class="frow-2">
+            <div class="fgroup">
+              <label class="flabel">Unit Vendor <span class="req">*</span></label>
+              <select id="cUnitVendor" class="fsel">
+                <option value="">— Pilih —</option>
+                <option>Roll</option><option>Lembar</option><option>Pail</option>
+                <option>Dus</option><option>Sak</option><option>Batang</option>
+                <option>Kaleng</option><option>Box</option><option>Set</option>
+                <option>Unit</option><option>Ton</option><option>Galon</option>
+                <option>Ember</option><option>Jerigen</option><option>Karung</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Unit Dasar AHSP <span class="req">*</span></label>
+              <select id="cUnitDasar" class="fsel">
+                <option value="">— Pilih —</option>
+                <option>m</option><option>m²</option><option>m³</option>
+                <option>kg</option><option>liter</option><option>bh</option>
+                <option>sak</option><option>OH</option><option>unit</option>
+                <option>btg</option><option>lbr</option><option>set</option><option>ls</option>
+              </select>
+            </div>
+          </div>
+ 
+          <div class="fgroup">
+            <label class="flabel">Faktor Konversi <span class="req">*</span>
+              <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)"> (isi per 1 unit vendor)</span>
+            </label>
+            <input id="cFaktor" type="number" step="any" min="0.0001" class="finput" placeholder="100" oninput="updateConvPreview()">
+            <div class="factor-hint" id="factorPreview" style="display:none">
+              <i class="fas fa-arrow-right"></i>
+              <span id="factorPreviewText">—</span>
+            </div>
+          </div>
+ 
+          <!-- WASTE FACTOR -->
+          <div class="fgroup">
+            <label class="flabel">Waste Factor</label>
+            <label class="toggle-waste">
+              <input type="checkbox" id="cWasteEnable" onchange="toggleWaste()"> Aktifkan Waste Factor
+            </label>
+            <div id="wasteFields" style="display:none;margin-top:10px">
+              <div class="waste-row">
+                <input id="cWaste" type="number" step="any" min="0" max="100" class="waste-pct-input" placeholder="5" oninput="updateConvPreview()">
+                <span style="font-size:12px;color:var(--dim)">% — sisa potongan/pemborosan</span>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- PURCHASE FACTOR -->
+          <div class="fgroup">
+            <label class="flabel">Purchase Factor</label>
+            <label class="toggle-waste">
+              <input type="checkbox" id="cPurchaseEnable" onchange="togglePurchase()"> Aktifkan Purchase Factor
+            </label>
+            <div id="purchaseFields" style="display:none;margin-top:10px">
+              <div class="waste-row">
+                <input id="cPurchase" type="number" step="any" min="0" max="100" class="waste-pct-input" placeholder="2" oninput="updateConvPreview()">
+                <span style="font-size:12px;color:var(--dim)">% — biaya pengadaan tambahan</span>
+              </div>
+            </div>
+          </div>
+ 
+          <div class="fgroup">
+            <label class="flabel">Catatan</label>
+            <input id="cCatatan" class="finput" placeholder="Contoh: 1 Roll = 100 m (kawat 2.5mm)">
+          </div>
+          <div class="fgroup">
+            <label class="toggle-waste"><input type="checkbox" id="cAktif" checked> Aturan Aktif</label>
+          </div>
+ 
+          <button class="btn btn-primary btn-full" id="convSaveBtn" onclick="saveConversion()">
+            <i class="fas fa-save"></i> <span id="convSaveLbl">SIMPAN ATURAN</span>
+          </button>
+          <button class="btn btn-secondary btn-full" id="convCancelBtn" onclick="cancelEditConv()" style="margin-top:7px;display:none">
+            <i class="fas fa-times"></i> Batal Edit
+          </button>
+        </div>
+ 
+        <!-- TABLE -->
+        <div>
+          <div class="data-card">
+            <div class="data-toolbar">
+              <div class="search-box"><i class="fas fa-search"></i>
+                <input id="convSearch" placeholder="Cari material, unit, kategori…" oninput="debouncedFilter()">
+              </div>
+              <select class="filter-sel" id="convKatFilter" onchange="filterConv()">
+                <option value="">Semua Kategori</option>
+                <option>Elektrikal</option><option>Beton</option><option>Besi & Baja</option>
+                <option>Finishing</option><option>Keramik</option><option>Plumbing</option>
+                <option>Kayu</option><option>Waterproofing</option><option>Lainnya</option>
+              </select>
+              <select class="filter-sel" id="convAktifFilter" onchange="filterConv()">
+                <option value="">Semua Status</option>
+                <option value="true">Aktif</option><option value="false">Nonaktif</option>
+              </select>
+              <span class="count-tag" id="convCount">0 aturan</span>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr>
+                  <th>ID</th><th>Nama Material</th>
+                  <th>Konversi</th><th>Faktor</th>
+                  <th>Waste%</th><th>Purchase%</th>
+                  <th>Status</th><th></th>
+                </tr></thead>
+                <tbody id="convBody">
+                  <tr><td colspan="8"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="convPag"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ TAB: KALKULATOR ══ -->
+    <div id="panel-calc" class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- INPUT SIDE -->
+        <div class="calc-card">
+          <div class="calc-title"><i class="fas fa-calculator"></i> Kalkulator Konversi Harga</div>
+ 
+          <div class="fgroup">
+            <label class="flabel">Nama Material</label>
+            <input id="calcNama" class="finput" placeholder="Ketik nama material…" oninput="calcLookupRule()">
+          </div>
+          <div class="frow-2">
+            <div class="fgroup">
+              <label class="flabel">Unit Vendor</label>
+              <select id="calcUnitVendor" class="fsel" onchange="calcLookupRule()">
+                <option value="">— Pilih —</option>
+                <option>Roll</option><option>Lembar</option><option>Pail</option>
+                <option>Dus</option><option>Sak</option><option>Batang</option>
+                <option>Kaleng</option><option>Box</option><option>Ton</option>
+                <option>Galon</option><option>Ember</option><option>Jerigen</option>
+              </select>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Harga Vendor (Rp)</label>
+              <input id="calcHarga" type="number" step="any" min="0" class="finput" placeholder="1500000" oninput="runCalc()">
+            </div>
+          </div>
+ 
+          <div id="calcRuleBadge"></div>
+ 
+          <div class="fgroup" style="margin-top:12px">
+            <label class="flabel">Faktor Konversi <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(auto-isi jika aturan ditemukan)</span></label>
+            <input id="calcFaktor" type="number" step="any" min="0.0001" class="finput" placeholder="100" oninput="runCalc()">
+            <div class="factor-hint"><i class="fas fa-info-circle"></i> <span id="calcFactorHint">Isi manual jika aturan tidak ditemukan</span></div>
+          </div>
+          <div class="frow-2">
+            <div class="fgroup">
+              <label class="flabel">Waste Factor %</label>
+              <input id="calcWaste" type="number" step="any" min="0" max="100" class="finput" placeholder="0" oninput="runCalc()">
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Purchase Factor %</label>
+              <input id="calcPurchase" type="number" step="any" min="0" max="100" class="finput" placeholder="0" oninput="runCalc()">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="runCalc()"><i class="fas fa-play"></i> HITUNG</button>
+        </div>
+ 
+        <!-- RESULT SIDE -->
+        <div>
+          <div class="result-box" id="calcResult" style="display:none">
+            <div class="formula-display" id="calcFormula"></div>
+            <div id="calcBreakdown"></div>
+          </div>
+          <div id="calcPlaceholder" style="padding:60px 20px;text-align:center;color:var(--muted)">
+            <i class="fas fa-calculator" style="font-size:48px;display:block;margin-bottom:14px;opacity:.15"></i>
+            <p style="font-size:13px">Isi form di sebelah kiri untuk melihat hasil konversi harga</p>
+          </div>
+ 
+          <!-- MULTI VENDOR COMPARISON TABLE -->
+          <div id="multiVendorSection" style="display:none;margin-top:20px">
+            <div class="section-title" style="font-size:15px;margin-bottom:12px"><i class="fas fa-store"></i> Perbandingan Vendor</div>
+            <div class="data-card">
+              <div class="tbl-wrap">
+                <table class="tbl" id="multiVendorTable">
+                  <thead><tr><th>Rank</th><th>Vendor</th><th>Harga Vendor</th><th>Harga AHSP</th><th>Selisih</th><th></th></tr></thead>
+                  <tbody id="multiVendorBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ TAB: IMPORT EXCEL ══ -->
+    <div id="panel-import" class="panel">
+      <div style="max-width:760px">
+        <div class="section-title" style="margin-bottom:14px"><i class="fas fa-file-import"></i> Import dari Excel / CSV</div>
+ 
+        <!-- Format Reference -->
+        <div class="form-card" style="margin-bottom:20px">
+          <div class="fc-title" style="margin-bottom:12px"><i class="fas fa-table" style="color:var(--cyan)"></i> Format Template</div>
+          <p style="font-size:12px;color:var(--dim);margin-bottom:10px">File Excel harus memiliki kolom berikut (baris pertama = header):</p>
+          <table class="sample-table">
+            <thead><tr><th>Nama Material</th><th>Unit Vendor</th><th>Faktor</th><th>Unit Dasar</th><th>Kategori</th><th>Waste%</th><th>Purchase%</th><th>Catatan</th></tr></thead>
+            <tbody>
+              <tr><td>Kabel NYM 2x1.5</td><td>Roll</td><td>100</td><td>m</td><td>Elektrikal</td><td>5</td><td>2</td><td>1 Roll = 100m</td></tr>
+              <tr><td>Keramik 60x60</td><td>Dus</td><td>1.44</td><td>m²</td><td>Keramik</td><td>5</td><td>0</td><td>1 Dus = 1.44m²</td></tr>
+              <tr><td>Cat Dulux</td><td>Pail</td><td>20</td><td>liter</td><td>Finishing</td><td>3</td><td>0</td><td>1 Pail = 20 liter</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template Excel</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadTemplateTSV()"><i class="fas fa-file-csv"></i> Download Template CSV</button>
+          </div>
+        </div>
+ 
+        <!-- Drop Zone -->
+        <div class="import-zone" id="dropZone"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleFileDrop(event)"
+          onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-arrow-up"></i>
+          <p style="font-size:13px;color:var(--dim);margin-bottom:6px">Drag & drop file Excel/CSV di sini, atau klik untuk pilih file</p>
+          <p style="font-size:11px;color:var(--muted)">Mendukung: .xlsx, .xls, .csv</p>
+        </div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(event)">
+ 
+        <!-- Preview -->
+        <div class="import-preview" id="importPreview">
+          <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+            <span style="font-size:13px;font-weight:600" id="previewTitle">Preview Import</span>
+            <div style="display:flex;gap:8px">
+              <span class="count-tag" id="previewCount">0 baris</span>
+              <button class="btn btn-primary btn-sm" id="importBtn" onclick="executeImport()"><i class="fas fa-upload"></i> Import Sekarang</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" style="max-height:300px">
+            <table class="tbl" id="previewTable">
+              <thead><tr><th>#</th><th>Nama Material</th><th>Unit Vendor</th><th>Faktor</th><th>Unit Dasar</th><th>Kategori</th><th>Waste%</th><th>Status</th></tr></thead>
+              <tbody id="previewBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ TAB: REFERENSI SATUAN ══ -->
+    <div id="panel-ref" class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="form-card">
+          <div class="fc-title"><i class="fas fa-ruler-combined" style="color:var(--cyan)"></i> Unit Vendor (Satuan Beli)</div>
+          <table class="sample-table">
+            <thead><tr><th>Satuan</th><th>Deskripsi</th><th>Contoh Material</th></tr></thead>
+            <tbody>
+              <tr><td>Roll</td><td>Gulungan</td><td>Kabel, Selang, Kawat</td></tr>
+              <tr><td>Lembar</td><td>Lembaran</td><td>Wiremesh, Tripleks, Zincalume</td></tr>
+              <tr><td>Pail</td><td>Ember besar (20L)</td><td>Cat tembok, Waterproofing</td></tr>
+              <tr><td>Galon</td><td>Galon (19L)</td><td>Cat, Epoxy</td></tr>
+              <tr><td>Kaleng</td><td>Kaleng kecil (1-5L)</td><td>Cat besi, Thinner</td></tr>
+              <tr><td>Dus</td><td>Kardus/kotak</td><td>Keramik, Granit, Bata</td></tr>
+              <tr><td>Sak</td><td>Karung 50kg</td><td>Semen, Pasir, Kapur</td></tr>
+              <tr><td>Batang</td><td>Panjang standar</td><td>Pipa, Besi, Hollow</td></tr>
+              <tr><td>Ton</td><td>1.000 kg</td><td>Besi, Baja, Pasir</td></tr>
+              <tr><td>Box</td><td>Kotak</td><td>Granit 60x60, Stop Kontak</td></tr>
+              <tr><td>Set</td><td>1 paket lengkap</td><td>Kunci, Engsel, Kran</td></tr>
+              <tr><td>Jerigen</td><td>Wadah plastik 20L</td><td>Solar, Oli, Cairan</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="form-card" style="margin-bottom:16px">
+            <div class="fc-title"><i class="fas fa-ruler" style="color:var(--success)"></i> Unit Dasar AHSP</div>
+            <table class="sample-table">
+              <thead><tr><th>Satuan</th><th>Keterangan</th><th>Bidang</th></tr></thead>
+              <tbody>
+                <tr><td>m</td><td>Meter panjang</td><td>Kabel, Pipa, Besi</td></tr>
+                <tr><td>m²</td><td>Meter persegi</td><td>Keramik, Cat, Plesteran</td></tr>
+                <tr><td>m³</td><td>Meter kubik</td><td>Beton, Pasir, Tanah</td></tr>
+                <tr><td>kg</td><td>Kilogram</td><td>Semen, Besi, Cat</td></tr>
+                <tr><td>liter</td><td>Liter volume</td><td>Cat, Thinner, Solar</td></tr>
+                <tr><td>bh</td><td>Buah/unit</td><td>Bata, Genteng, Aksesori</td></tr>
+                <tr><td>sak</td><td>Karung 50kg</td><td>Semen Portland</td></tr>
+                <tr><td>OH</td><td>Orang Hari</td><td>Upah tenaga kerja</td></tr>
+                <tr><td>btg</td><td>Batang</td><td>Pipa, Hollow, Profil</td></tr>
+                <tr><td>lbr</td><td>Lembar</td><td>Tripleks, Zincalume</td></tr>
+                <tr><td>set</td><td>Satu set</td><td>Kunci, Aksesoris</td></tr>
+                <tr><td>ls</td><td>Lump Sum</td><td>Pekerjaan borongan</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="form-card">
+            <div class="fc-title"><i class="fas fa-lightbulb" style="color:var(--warning)"></i> Contoh Konversi Umum</div>
+            <table class="sample-table">
+              <thead><tr><th>Material</th><th>Konversi</th><th>Faktor</th></tr></thead>
+              <tbody>
+                <tr><td>Kabel NYM</td><td>1 Roll → m</td><td>100</td></tr>
+                <tr><td>Keramik 60x60</td><td>1 Dus → m²</td><td>1.44</td></tr>
+                <tr><td>Granit 60x60</td><td>1 Box → m²</td><td>1.08</td></tr>
+                <tr><td>Cat Tembok</td><td>1 Pail → liter</td><td>20</td></tr>
+                <tr><td>Pipa PVC 4"</td><td>1 Batang → m</td><td>4</td></tr>
+                <tr><td>Wiremesh M6</td><td>1 Lembar → m²</td><td>5.4</td></tr>
+                <tr><td>Besi Beton</td><td>1 Ton → kg</td><td>1000</td></tr>
+                <tr><td>Semen PC</td><td>1 Ton → sak</td><td>20</td></tr>
+                <tr><td>Bata Ringan</td><td>1 Palet → bh</td><td>200</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+</main>
+
+    <script src="js/Conversion.js"></script>
+
+</body>
+
+</html>

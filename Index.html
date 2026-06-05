@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Login</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <link rel="stylesheet" href="css/Index.css">
+</head>
+
+<body>
+
+    <div class="glow g1"></div><div class="glow g2"></div>
+<div class="wrap">
+  <div class="left">
+    <div class="brand">
+      <div class="brand-ico"><i class="fas fa-hard-hat"></i></div>
+      <div><div class="brand-nm">QS MANAGER</div><div class="brand-sub">Construction System v3</div></div>
+    </div>
+    <div class="hero">
+      <h1>ESTIMASI<br>PROYEK<br><em>PRESISI</em></h1>
+      <p>Platform manajemen database material, vendor, AHSP, dan analisa harga terpadu untuk Quantity Surveyor profesional.</p>
+    </div>
+    <div class="feats">
+      <div class="feat"><div class="feat-ico"><i class="fas fa-database"></i></div><span>Database Material & Vendor Terpusat</span></div>
+      <div class="feat"><div class="feat-ico"><i class="fas fa-chart-column"></i></div><span>Analisa & Perbandingan Harga Real-time</span></div>
+      <div class="feat"><div class="feat-ico"><i class="fas fa-calculator"></i></div><span>AHSP Builder + Export Excel/PDF</span></div>
+      <div class="feat"><div class="feat-ico"><i class="fas fa-shield-halved"></i></div><span>Role-based Access Control (RBAC)</span></div>
+    </div>
+    <div class="deco">🏗</div>
+  </div>
+  <div class="right">
+    <h2 class="rtitle">Masuk ke Sistem</h2>
+    <p class="rsub">Masukkan kredensial untuk melanjutkan</p>
+    <div class="session-banner" id="sessionBanner"><i class="fas fa-clock"></i> Sesi Anda berakhir. Silakan login kembali.</div>
+    <div class="msg" id="msg"><i class="fas fa-exclamation-circle"></i><span id="msgText"></span></div>
+    <div class="fgroup">
+      <label class="flabel">Username</label>
+      <input id="uname" type="text" class="finput" placeholder="Masukkan username" autocomplete="username">
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Password</label>
+      <div class="igrp">
+        <input id="pass" type="password" class="finput" placeholder="Masukkan password" autocomplete="current-password">
+        <button class="eye-btn" onclick="togglePass()"><i id="eyeIco" class="fas fa-eye"></i></button>
+      </div>
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> MASUK</button>
+    <div class="hint">
+      <div class="hint-title">Default Credentials</div>
+      <div class="hrow"><span>Admin</span><code>admin / admin123</code></div>
+      <div class="hrow"><span>QS</span><code>qs / qs123</code></div>
+      <div class="hrow"><span>Purchasing</span><code>purchasing / purchasing123</code></div>
+    </div>
+  </div>
+</div>
+
+    <script src="js/Index.js"></script>
+
+</body>
+
+</html>

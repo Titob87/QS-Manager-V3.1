@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>QS Manager - Users</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/Users.css">
+</head>
+
+<body>
+
+<div id="sidebarMount"></div>
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="page-title"><i class="fas fa-users-gear"></i> User Management</div>
+  </div>
+  <div class="content">
+    <div class="section-title"><i class="fas fa-shield-halved"></i> Role & Permissions</div>
+    <div class="perm-grid" style="margin-bottom:24px">
+ 
+      <!-- ADMIN -->
+      <div class="perm-card">
+        <div class="perm-title"><span class="badge badge-red">ADMIN</span> Full Access</div>
+        <div class="perm-list">
+          <div class="perm-item has"><i class="fas fa-check"></i> Dashboard</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Material (CRUD)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Upah & Alat (CRUD)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Vendor (CRUD)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Analisa Harga</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> AHSP Builder</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> User Management</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Export CSV / Excel</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Export & Print PDF</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Hapus Semua Data</div>
+        </div>
+      </div>
+ 
+      <!-- QS -->
+      <div class="perm-card">
+        <div class="perm-title"><span class="badge badge-cyan">QS</span> Quantity Surveyor</div>
+        <div class="perm-list">
+          <div class="perm-item has"><i class="fas fa-check"></i> Dashboard</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Material (Add / Edit)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Upah & Alat (Add / Edit)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> AHSP Builder</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Export CSV / Excel</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Vendor Management</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Analisa Harga</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> User Management</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Hapus Data</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Print PDF</div>
+        </div>
+      </div>
+ 
+      <!-- PURCHASING -->
+      <div class="perm-card">
+        <div class="perm-title"><span class="badge badge-purple">PURCHASING</span> Purchasing</div>
+        <div class="perm-list">
+          <div class="perm-item has"><i class="fas fa-check"></i> Dashboard</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Material (Read Only)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Vendor (Add / Edit)</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Analisa Harga</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Export CSV</div>
+          <div class="perm-item has"><i class="fas fa-check"></i> Print PDF Analisa Harga</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Upah & Alat</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> AHSP Builder</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> User Management</div>
+          <div class="perm-item no"><i class="fas fa-times"></i> Hapus Data</div>
+        </div>
+      </div>
+ 
+    </div>
+ 
+    <div class="section-title"><i class="fas fa-users"></i> Daftar Pengguna</div>
+    <div class="panel-grid">
+      <!-- FORM -->
+      <div class="form-card" id="userFormCard" style="position:sticky;top:62px">
+        <div class="fc-title"><i class="fas fa-user-plus"></i> <span id="userFormTitle">Tambah User</span></div>
+ 
+        <!-- INFO BANNER -->
+        <div style="background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.18);border-radius:var(--r-md);padding:10px 13px;margin-bottom:14px;font-size:11.5px;color:var(--cyan);display:flex;align-items:flex-start;gap:9px">
+          <i class="fas fa-circle-info" style="margin-top:1px;flex-shrink:0"></i>
+          <span>User yang ditambahkan <strong>langsung bisa login</strong> setelah disimpan. Password disimpan secara lokal dan ke Spreadsheet (jika GAS terhubung).</span>
+        </div>
+ 
+        <input type="hidden" id="userEditId">
+        <div class="fgroup"><label class="flabel">Username <span class="req">*</span></label><input id="uUsername" class="finput" placeholder="username unik" autocomplete="off"></div>
+        <div class="fgroup"><label class="flabel">Full Name</label><input id="uFullName" class="finput" placeholder="Nama lengkap"></div>
+        <div class="fgroup">
+          <label class="flabel">Password <span id="passHint" style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(kosongkan jika tidak diubah)</span></label>
+          <div style="position:relative">
+            <input id="uPassword" type="password" class="finput" placeholder="••••••••" autocomplete="new-password" style="padding-right:40px">
+            <button onclick="toggleUPass()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px"><i id="uEye" class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="frow-2">
+          <div class="fgroup"><label class="flabel">Role <span class="req">*</span></label>
+            <select id="uRole" class="fsel">
+              <option value="qs">QS (Quantity Surveyor)</option>
+              <option value="purchasing">Purchasing</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="fgroup"><label class="flabel">Status</label>
+            <select id="uStatus" class="fsel"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" id="userSaveBtn" onclick="saveUser()"><i class="fas fa-save"></i> <span id="userSaveLbl">SIMPAN USER</span></button>
+        <button class="btn btn-secondary btn-full" id="userCancelBtn" onclick="cancelEditUser()" style="margin-top:7px;display:none"><i class="fas fa-times"></i> Batal Edit</button>
+      </div>
+ 
+      <!-- TABLE -->
+      <div class="data-card">
+        <div class="data-toolbar">
+          <div class="search-box"><i class="fas fa-search"></i><input id="userSearch" placeholder="Cari username, nama…" oninput="debouncedFilter()"></div>
+          <select class="filter-sel" id="userRoleFilter" onchange="filterUsers()">
+            <option value="">Semua Role</option>
+            <option value="admin">Admin</option><option value="qs">QS</option><option value="purchasing">Purchasing</option>
+          </select>
+          <span class="count-tag" id="userCount">0 user</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl"><thead><tr>
+            <th>ID</th><th>Username</th><th>Full Name</th><th>Role</th><th>Status</th><th>Created</th><th></th>
+          </tr></thead>
+          <tbody id="userBody"><tr><td colspan="7"><div class="loader"><div class="spin"></div> Memuat…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+    <script src="js/Users.js"></script>
+
+</body>
+
+</html>
