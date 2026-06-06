@@ -1,4 +1,4 @@
-const API_URL    = 'https://script.google.com/macros/s/AKfycbzauqH037ucWERfv8SL7xG7FnAhFZ0qFMZPSTn_5wcTrToTiIvnjfchGj2EBFoVPjZM/exec';
+const API_URL    = 'https://script.google.com/macros/s/AKfycbzzYNxLgt1syGzrm5ZC0JYRmCwA6veoPWwIaBHrNV2D2A3T3FC6KY1Uoj3WzO2ZDFRHjw/exec';
 const SESSION_KEY= 'qs_session';
 const SESSION_TTL= 8 * 60 * 60 * 1000; // 8 hours
 const USER_CACHE_KEY = 'qs_user_cache'; // stores users added via users.html
