@@ -4,7 +4,7 @@
    ============================================================ */
  
 // ── CONFIG ───────────────────────────────────────────────────
-const API_URL    = 'https://script.google.com/macros/s/AKfycbzauqH037ucWERfv8SL7xG7FnAhFZ0qFMZPSTn_5wcTrToTiIvnjfchGj2EBFoVPjZM/exec';
+const API_URL    = 'https://script.google.com/macros/s/AKfycbzzYNxLgt1syGzrm5ZC0JYRmCwA6veoPWwIaBHrNV2D2A3T3FC6KY1Uoj3WzO2ZDFRHjw/exec';
  
 // ── RBAC ─────────────────────────────────────────────────────
 const ROLE_PERMS = {
@@ -129,7 +129,7 @@ function logout() { QSAuth.clear(); location.href = 'index.html'; }
 const QSApi = {
   // ── GET request to GAS Web App ─────────────────────────────
   async get(action, params = {}) {
-    if (API_URL === 'https://script.google.com/macros/s/AKfycbzauqH037ucWERfv8SL7xG7FnAhFZ0qFMZPSTn_5wcTrToTiIvnjfchGj2EBFoVPjZM/exec') throw new Error('API_URL belum dikonfigurasi');
+    if (API_URL === 'YOUR_GAS_WEBAPP_URL') throw new Error('API_URL belum dikonfigurasi');
     const qs  = new URLSearchParams({ action, ...params }).toString();
     const url = `${API_URL}?${qs}`;
     const r   = await fetch(url, { method: 'GET', redirect: 'follow' });
@@ -140,7 +140,7 @@ const QSApi = {
   },
   // ── POST request to GAS Web App ────────────────────────────
   async post(payload) {
-    if (API_URL === 'https://script.google.com/macros/s/AKfycbzauqH037ucWERfv8SL7xG7FnAhFZ0qFMZPSTn_5wcTrToTiIvnjfchGj2EBFoVPjZM/exec') throw new Error('API_URL belum dikonfigurasi');
+    if (API_URL === 'YOUR_GAS_WEBAPP_URL') throw new Error('API_URL belum dikonfigurasi');
     const r = await fetch(API_URL, {
       method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
